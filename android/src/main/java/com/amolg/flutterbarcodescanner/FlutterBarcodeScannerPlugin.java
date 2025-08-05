@@ -27,8 +27,6 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.PluginRegistry;
-import io.flutter.plugin.common.PluginRegistry.ActivityResultListener;
 import io.flutter.plugin.common.EventChannel.StreamHandler;
 import io.flutter.embedding.engine.plugins.lifecycle.FlutterLifecycleAdapter;
 
@@ -214,14 +212,12 @@ public class FlutterBarcodeScannerPlugin implements MethodCallHandler, ActivityR
      * @param messenger
      * @param applicationContext
      * @param activity
-     * @param registrar
      * @param activityBinding
      */
     private void createPluginSetup(
             final BinaryMessenger messenger,
             final Application applicationContext,
             final Activity activity,
-            final PluginRegistry.Registrar registrar,
             final ActivityPluginBinding activityBinding) {
 
 
@@ -234,19 +230,12 @@ public class FlutterBarcodeScannerPlugin implements MethodCallHandler, ActivityR
         this.applicationContext = applicationContext;
         channel = new MethodChannel(messenger, CHANNEL);
         channel.setMethodCallHandler(this);
-        if (registrar != null) {
-            // V1 embedding setup for activity listeners.
-            observer = new LifeCycleObserver(activity);
-            applicationContext.registerActivityLifecycleCallbacks(
-                    observer); // Use getApplicationContext() to avoid casting failures.
-            registrar.addActivityResultListener(this);
-        } else {
-            // V2 embedding setup for activity listeners.
-            activityBinding.addActivityResultListener(this);
-            lifecycle = FlutterLifecycleAdapter.getActivityLifecycle(activityBinding);
-            observer = new LifeCycleObserver(activity);
-            lifecycle.addObserver(observer);
-        }
+        // V2 embedding setup for activity listeners.
+        activityBinding.addActivityResultListener(this);
+        lifecycle = FlutterLifecycleAdapter.getActivityLifecycle(activityBinding);
+        observer = new LifeCycleObserver(activity);
+        lifecycle.addObserver(observer);
+        
     }
 
     @Override
